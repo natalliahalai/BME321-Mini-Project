@@ -1,0 +1,74 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+Definition of the variables:
+- treatment indicator (0 = ZDV only; 1 = ZDV + ddI, 2 = ZDV + Zal, 3 = ddI only)
+- hemo hemophilia (0=no, 1=yes)
+- drugs history of IV drug use (0=no, 1=yes)
+- oprior Non-ZDV antiretroviral therapy pre-175 (0=no, 1=yes)
+
+```{r}
+# Load the package
+library(ucimlrepo)
+
+# Fetch the dataset by its UCI ID (890)
+aids_clinical_trials_group_study_175 <- fetch_ucirepo(id = 890)
+
+# View metadata
+print(aids_clinical_trials_group_study_175$metadata)
+
+# Access features and targets
+features <- aids_clinical_trials_group_study_175$data$features
+targets  <- aids_clinical_trials_group_study_175$data$targets
+
+
+
+hist(features$time/7)
+quantile(features$time/7) #143 is the median
+
+#str2 antiretroviral history (0=naive, 1=experienced)
+tapply(features$time/7, features$str2, median)
+
+```
+
+
+```{r}
+library(gtsummary)
+
+#counts declide -> cd40 and cd420 ratio
+#AIDS -> ower than 200 cd420
+#death -> karnof score 0
+
+features$event<-ifelse(
+  features$karnof==0 |
+  features$cd420/features$cd40<0.5 |
+    features$cd420 < 200, 1, 0
+)
+
+features$trt<-factor(features$trt, labels=c("ZDV", "ZDV + ddI", "ZDV + Zal", "Didanosine"))
+
+library(survival)
+surv_obj <- Surv(time = features$time/7, event = features$event)
+km_fit <- survfit(surv_obj ~ trt, data = features)
+
+
+plot(km_fit, col = c("blue", "red", "green", "violet"), lty = 1:2,
+     xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
+legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
+       col = c("blue", "red", "green", "violet"), lty = 1:2)
+
+
+
+
+# features%>%
+#   tbl_summary( 
+#     by=trt,
+#     include= c()
+#       )
+
+
+```
+
