@@ -1,0 +1,22 @@
+---
+title: "MB recreate Table1"
+author: "Mara Bodenmann"
+date: today
+toc: true
+abstract-title: "Research question:"
+abstract: ""
+format:
+  html:
+    embed-resources: true #single HTML file with no supportive directory
+#    css: ../../styles.css
+    number-sections: true
+    code-fold: show
+editor: visual
+editor_options:
+  chunk_output_type: console
+execute:
+  warning: false #this prevent warning messages being rendered
+  message: false
+---
+
+## 
