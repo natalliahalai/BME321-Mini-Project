@@ -1,0 +1,10 @@
+*png
+*freeze/
+*jpeg
+/.quarto/
+
+# RStudio defaults
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
