@@ -1,0 +1,32 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+Definition of the variables:
+- treatment indicator (0 = ZDV only; 1 = ZDV + ddI, 2 = ZDV + Zal, 3 = ddI only)
+- hemo hemophilia (0=no, 1=yes)
+- drugs history of IV drug use (0=no, 1=yes)
+- oprior Non-ZDV antiretroviral therapy pre-175 (0=no, 1=yes)
+
+```{r}
+# Load the package
+library(ucimlrepo)
+
+# Fetch the dataset by its UCI ID (890)
+aids_clinical_trials_group_study_175 <- fetch_ucirepo(id = 890)
+
+# View metadata
+print(aids_clinical_trials_group_study_175$metadata)
+
+# Access features and targets
+features <- aids_clinical_trials_group_study_175$data$features
+targets  <- aids_clinical_trials_group_study_175$data$targets
+
+
+str(features)
+
+
+```
+
