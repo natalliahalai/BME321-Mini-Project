@@ -1,0 +1,21 @@
+---
+title: "Duration of Follow-Up and Study Treatment"
+author: "Svenja Kuster"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+# preparing R and importing data
+
+```{r}
+# libraries
+library(ucimlrepo)
+
+# data
+hiv.raw <- fetch_ucirepo(id=890)
+hiv <- hiv.raw$data$original
+```
+
+# 
