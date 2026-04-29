@@ -61,6 +61,20 @@ legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
        col = c("blue", "red", "green", "violet"), lty = 1:2)
 
 
+features$event_sec<-ifelse(
+  features$karnof==0 |
+    features$cd420 < 200, 1, 0
+)
+
+surv_obj_2 <- Surv(time = features$time/7, event = features$event_sec)
+km_fit_2 <- survfit(surv_obj_2 ~ trt, data = features)
+
+
+plot(km_fit_2, col = c("blue", "red", "green", "violet"), lty = 1:2,
+     xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
+legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
+       col = c("blue", "red", "green", "violet"), lty = 1:2)
+
 
 
 # features%>%
