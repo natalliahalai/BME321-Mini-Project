@@ -1,7 +1,26 @@
 ---
-title: "Untitled"
-format: html
+title: "Progression of Disease section"
+author: "Natallia"
+date: today
+toc: true
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    number-sections: true
+    
 editor: visual
+editor-options:
+  chunk-output-type: console
+  
+project:
+  output-dir: output
+  execute-dir: project
+
+execute: 
+  warning: false
+  error: false
+  freeze: true
 ---
 
 Definition of the variables:
@@ -11,6 +30,8 @@ Definition of the variables:
 - oprior Non-ZDV antiretroviral therapy pre-175 (0=no, 1=yes)
 
 ```{r}
+#| label: preparing-session
+
 # Load the package
 library(ucimlrepo)
 
@@ -18,40 +39,96 @@ library(ucimlrepo)
 aids_clinical_trials_group_study_175 <- fetch_ucirepo(id = 890)
 
 # View metadata
-print(aids_clinical_trials_group_study_175$metadata)
+# print(aids_clinical_trials_group_study_175$metadata)
 
 # Access features and targets
 features <- aids_clinical_trials_group_study_175$data$features
 targets  <- aids_clinical_trials_group_study_175$data$targets
 
+features$cid<-targets$cid
 
+```
+
+```{r}
+#| label: fig-time-dist
 
 hist(features$time/7)
 quantile(features$time/7) #143 is the median
 
 #str2 antiretroviral history (0=naive, 1=experienced)
+features$str2<-factor(features$str2, levels=c(0,1), labels=c("naive", "experienced"))
 tapply(features$time/7, features$str2, median)
-
 ```
 
+
+::: {.callout-note}
+Death can not be determined. As well as the cd40 counts at baseline include <200 cells per mm3 which doesnt make sense!!
+:::
 
 ```{r}
 library(gtsummary)
 
 #counts declide -> cd40 and cd420 ratio
 #AIDS -> ower than 200 cd420
-#death -> karnof score 0
+#death -> karnof score 0 !!!! => no karnof == 0
 
-features$event<-ifelse(
-  features$karnof==0 |
-  features$cd420/features$cd40<0.5 |
-    features$cd420 < 200, 1, 0
-)
 
-features$trt<-factor(features$trt, labels=c("ZDV", "ZDV + ddI", "ZDV + Zal", "Didanosine"))
+table(features$cd420/features$cd40<=0.5 | features$cd420 < 200)
+table(features$cd420<200)
+table(features$karnof==0)
+summary(features$karnof)
+
+
+# features$event<-ifelse(
+#   # features$karnof==0 |
+#   features$cd420/features$cd40<=0.5 |
+#     features$cd420 < 200, 1, 0
+# )
+
+```
+```{r}
+# features$trt<-factor(features$trt, labels=c("ZDV", "ZDV + ddI", "ZDV + Zal", "Didanosine"))
+# 
+# surv_obj <- Surv(time = features$time/7, event = features$event)
+# km_fit <- survfit(surv_obj ~ trt, data = features)
+# 
+# 
+# plot(km_fit, col = c("blue", "red", "green", "violet"), lty = 1:2,
+#      xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
+# legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
+#        col = c("blue", "red", "green", "violet"), lty = 1:2)
+# 
+# 
+# features$event_sec<-ifelse(
+#   # features$karnof==0 |
+#     features$cd420 < 200, 1, 0
+# )
+# 
+# surv_obj_2 <- Surv(time = features$time/7, event = features$event_sec)
+# km_fit_2 <- survfit(surv_obj_2 ~ trt, data = features)
+# 
+# 
+# plot(km_fit_2, col = c("blue", "red", "green", "violet"), lty = 1:2,
+#      xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
+# legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
+#        col = c("blue", "red", "green", "violet"), lty = 1:2)
+# 
+
+
+# features%>%
+#   tbl_summary( 
+#     by=trt,
+#     include= c()
+#       )
+
+
+```
+
+```{r}
 
 library(survival)
-surv_obj <- Surv(time = features$time/7, event = features$event)
+
+surv_obj <- Surv(time = features$time/7, event = features$cid)
 km_fit <- survfit(surv_obj ~ trt, data = features)
 
 
@@ -61,28 +138,17 @@ legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
        col = c("blue", "red", "green", "violet"), lty = 1:2)
 
 
-features$event_sec<-ifelse(
-  features$karnof==0 |
-    features$cd420 < 200, 1, 0
-)
-
-surv_obj_2 <- Surv(time = features$time/7, event = features$event_sec)
-km_fit_2 <- survfit(surv_obj_2 ~ trt, data = features)
+features$sec_endpoint_maybe<-ifelse(features$cid==1 & features$cd420/features$cd40>0.5,1,0)
 
 
-plot(km_fit_2, col = c("blue", "red", "green", "violet"), lty = 1:2,
+surv_obj <- Surv(time = features$time/7, event = features$sec_endpoint_maybe)
+km_fit <- survfit(surv_obj ~ trt, data = features)
+
+
+plot(km_fit, col = c("blue", "red", "green", "violet"), lty = 1:2,
      xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
 legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
        col = c("blue", "red", "green", "violet"), lty = 1:2)
-
-
-
-# features%>%
-#   tbl_summary( 
-#     by=trt,
-#     include= c()
-#       )
-
 
 ```
 

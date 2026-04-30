@@ -1,4 +1,4 @@
 project:
-  output-dir: Output
+  output-dir: output
   execute-dir: project
 
