@@ -1,10 +1,10 @@
 # Have to do:
 
 # Working on:
-
-"Work" -- by whom
-"Duration of Follow-Up and Study Treatment" -- Svenja
 "Reconstruct Table 1" -- Mara
-"Progression of Disease" -- Natallia
+"All Subjects" -- Natallia
+"Responses of CD4 Cell Counts - reconstructing figure 2" -- Svenja
 
 # Completed
+"Progression of Disease - no Table 2" -- Natallia
+"Duration of Follow-Up and Study Treatment" -- Svenja
