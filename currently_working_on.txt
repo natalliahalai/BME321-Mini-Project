@@ -3,6 +3,7 @@
 # Working on:
 "Reconstruct Table 1" -- Mara
 "All Subjects" -- Natallia
+"Responses of CD4 Cell Counts - reconstructing figure 2" -- Svenja
 
 # Completed
 "Progression of Disease - no Table 2" -- Natallia
