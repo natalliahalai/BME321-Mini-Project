@@ -23,6 +23,7 @@ execute:
 
 ```{r}
 #| label: prepare-session
+#| code-fold: true
 library(ucimlrepo)
 library(tidyverse)
 library(gtsummary)
@@ -34,7 +35,9 @@ df<- data1$original
 ```
 
 ```{r}
-#| label: try-summary-table
+#| label: tbl-summary-table
+#| tbl-cap: "Summary of the characteristics of the patients included in the data"
+#| code-fold: true
 
 cdf<-df%>%
   select(str2, gender, age, race, homo, hemo, drugs, karnof, symptom, cd40, preanti)
@@ -75,6 +78,9 @@ Table1 |>
         row_type = "label",
         .before = which(.x$variable == "homo")[1]
       )
-  )
+  )|>
+  modify_caption("**Table 1**")
 
 ```
+
+@tbl-summary-table was reconstructed using the data available. From the onset none of the following analysis can 100% reconstruct the findings in the paper, simply because in the paper the list 2467 as the total patient number. However the data only includes 2193 patient. Meaning we have at least: `r 2467-2193` data points less to include in the analysis. However it is possible that the data we are working with has already excluded any patients with recorded NAs.
