@@ -22,5 +22,59 @@ execute:
 ## Get dataset
 
 ```{r}
+#| label: prepare-session
+library(ucimlrepo)
+library(tidyverse)
+library(gtsummary)
+library(gt)
+
+data<-fetch_ucirepo(id=890)
+data1<- data$data
+df<- data1$original
+```
+
+```{r}
+#| label: try-summary-table
+
+cdf<-df%>%
+  select(str2, gender, age, race, homo, hemo, drugs, karnof, symptom, cd40, preanti)
+
+#names(cdf)[2]<- "Male"
+
+cdf$str2<- factor(cdf$str2, levels= c(0, 1),
+                         labels= c("No Prior Exposure to Antiviral Agents", "Prior Exposure to Antiviral Agents"))
+cdf$race<- factor(cdf$race, levels = c(0,1),
+                  labels=c("White","Non-white"))
+cdf<-cdf%>%mutate(karnof100=ifelse(karnof==100,"100%","Other"),preantimo=preanti/30.4)
+Table1<-cdf %>%
+  tbl_summary(include= c(str2,gender,age,race,homo,drugs,hemo,karnof100,symptom,cd40,preantimo),
+              by=str2,
+              label=list(gender~"Male sex",
+                         age ~ "Age - yr",
+                         race ~ "Race or ethnic group",
+                         homo~"Homosexuality",
+                         drugs~"Injection-drug use",
+                         hemo~"Hemophilia",
+                         karnof100~"Karnofsky score",
+                         symptom~"Symptomatic HIV infection",
+                         cd40~ "CD4 cell count -cells/mm^3",
+                         preantimo~"Median length of prior antiviral therapy - mo (lower and upper quartiles)"),
+              statistic = list(age~"{mean} ± {sd}",
+                               cd40~"{mean} ± {sd}"),
+              digits = list(age ~ c(1, 1)),
+              missing="no")%>%
+  add_overall()
+
+Table1 |>
+  modify_header(stat_0 ~ "**All Patients** N = {n}")|>
+  modify_table_body(
+    ~ .x |>
+      dplyr::add_row(
+        variable = "header_risk",
+        label = "Risk factors",
+        row_type = "label",
+        .before = which(.x$variable == "homo")[1]
+      )
+  )
 
 ```
