@@ -16,6 +16,50 @@ library(ucimlrepo)
 # data
 hiv.raw <- fetch_ucirepo(id=890)
 hiv <- hiv.raw$data$original
+hiv$trt <- factor(hiv$trt)
 ```
 
-# 
+# duration of follow-up
+
+```{r}
+#median duration of follow up:
+median(hiv$time)/7 #143 weeks
+
+#median duration of follow up with prior ART:
+median(hiv$time[hiv$str2==1])/7 #147 weeks
+
+#median duration of follow up without prior ART:
+median(hiv$time[hiv$str2==0])/7 #135 weeks
+
+#cumulative follow-up with prior ART:
+sum(hiv$time[hiv$str2==1])/365.25 #3556 years
+
+#cumulative follow-up without prior ART:
+sum(hiv$time[hiv$str2==0])/365.25 #2430 years
+```
+
+# premature discontinuation
+
+```{r}
+#rate of premature discontinuation:
+mean(hiv$offtrt) #53%
+
+#rate of premature discontinuation with no prior ART:
+mean(hiv$offtrt[hiv$str2==0]) #54%
+
+#rate of premature discontinuation with prior ART:
+mean(hiv$offtrt[hiv$str2==1]) #52%
+
+#rate premature discontinuation for the different treatment groups with no prior ART:
+by(hiv$offtrt[hiv$str2 == 0], hiv$trt[hiv$str2 == 0], mean) #ddl alone = 46% (3) (significantly lower)
+
+#rate premature discontinuation for the different treatment groups with prior ART:
+by(hiv$offtrt[hiv$str2 == 1], hiv$trt[hiv$str2 == 1], mean) #zidovudine + didanosine (1) = 47%, zidovudine(0) = 57%
+```
+
+# logistic regression for premature discontinuation
+
+```{r}
+log.reg.disc <- glm(offtrt ~ age + drugs + karnof + cd40+ cd420 + symptom, data = hiv, family = binomial)
+summary(log.reg.disc)
+```
