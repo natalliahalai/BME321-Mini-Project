@@ -1,10 +1,16 @@
 ---
 title: "Duration of Follow-Up and Study Treatment"
 author: "Svenja Kuster"
-format: html
+format: 
+  html:
+    embed-resources: true
 editor: visual
 editor_options: 
   chunk_output_type: console
+  
+project:
+  execute-dir: project
+  output-dir: output
 ---
 
 # preparing R and importing data

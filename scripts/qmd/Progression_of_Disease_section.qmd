@@ -23,14 +23,11 @@ execute:
   freeze: true
 ---
 
-Definition of the variables:
-- treatment indicator (0 = ZDV only; 1 = ZDV + ddI, 2 = ZDV + Zal, 3 = ddI only)
-- hemo hemophilia (0=no, 1=yes)
-- drugs history of IV drug use (0=no, 1=yes)
-- oprior Non-ZDV antiretroviral therapy pre-175 (0=no, 1=yes)
+Definition of the variables: - treatment indicator (0 = ZDV only; 1 = ZDV + ddI, 2 = ZDV + Zal, 3 = ddI only) - hemo hemophilia (0=no, 1=yes) - drugs history of IV drug use (0=no, 1=yes) - oprior Non-ZDV antiretroviral therapy pre-175 (0=no, 1=yes)
 
 ```{r}
 #| label: preparing-session
+#| echo: false
 
 # Load the package
 library(ucimlrepo)
@@ -52,10 +49,10 @@ features$cid<-targets$cid
 ```{r}
 #| label: fig-time-dist
 
-hist(features$time/7)
-quantile(features$time/7) #143 is the median treatment weeks
-
-quantile(features$time)
+# hist(features$time/7)
+# quantile(features$time/7) #143 is the median treatment weeks
+# 
+# quantile(features$time)
 #   0%  25%  50%  75% 100% 
 #   14  727  997 1091 1231 
 # > 1231/365
@@ -64,16 +61,37 @@ quantile(features$time)
 # [1] 2.731507 => average 2.7 years treatment
 
 #str2 antiretroviral history (0=naive, 1=experienced)
-features$str2<-factor(features$str2, levels=c(0,1), labels=c("naive", "experienced"))
-tapply(features$time/7, features$str2, median)
+# features$str2<-factor(features$str2, levels=c(0,1), labels=c("naive", "experienced"))
+# tapply(features$time/7, features$str2, median)
+
 ```
 
+```{r}
+#| label: fig-cd40-baseline
+#| fig-cap: "Baseline distribution of CD4+ cell counts per mm^3"
+#| echo: false
+quantile(features$cd40)
+cd40_200<-table(features$cd40<200)
 
-::: {.callout-note}
-Death can not be determined. As well as the cd40 counts at baseline include <200 cells per mm3 which doesnt make sense!!
+h<-hist(features$cd40, plot=FALSE)
+cols <- ifelse(h$mids < 200, "red", "gray")
+
+
+hist(features$cd40,
+     main="",
+     ylab="Frequency",
+     xlab="CD4+ cell counts per mm^3",
+     col=cols)
+```
+
+As we can see from the histogram there appear to be people with less than 200 CD4+ cells per mm\^3 which would be against the criteria mentioned in the paper. (`r round(cd40_200[2]/nrow(features)*100, 3)` %)
+
+::: callout-note
+Death can not be determined. As well as the cd40 counts at baseline include \<200 cells per mm3 which does not make sense!!
 :::
 
 ```{r}
+#| include: false
 library(gtsummary)
 
 #counts declide -> cd40 and cd420 ratio
@@ -94,49 +112,14 @@ summary(features$karnof)
 # )
 
 ```
-```{r}
-# features$trt<-factor(features$trt, labels=c("ZDV", "ZDV + ddI", "ZDV + Zal", "Didanosine"))
-# 
-# surv_obj <- Surv(time = features$time/7, event = features$event)
-# km_fit <- survfit(surv_obj ~ trt, data = features)
-# 
-# 
-# plot(km_fit, col = c("blue", "red", "green", "violet"), lty = 1:2,
-#      xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
-# legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
-#        col = c("blue", "red", "green", "violet"), lty = 1:2)
-# 
-# 
-# features$event_sec<-ifelse(
-#   # features$karnof==0 |
-#     features$cd420 < 200, 1, 0
-# )
-# 
-# surv_obj_2 <- Surv(time = features$time/7, event = features$event_sec)
-# km_fit_2 <- survfit(surv_obj_2 ~ trt, data = features)
-# 
-# 
-# plot(km_fit_2, col = c("blue", "red", "green", "violet"), lty = 1:2,
-#      xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
-# legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
-#        col = c("blue", "red", "green", "violet"), lty = 1:2)
-# 
-
-
-# features%>%
-#   tbl_summary( 
-#     by=trt,
-#     include= c()
-#       )
-
-
-```
 
 # 1st Paragraph
-Five hundred sixty-five patients reached a primary
-end point — a 50 percent decline in the CD4 cell
-count, an AIDS-defining event, or death. Sixty
+
+*Five hundred sixty-five patients reached a primary end point — a 50 percent decline in the CD4 cell count, an AIDS-defining event, or death.*
+
 ```{r}
+#| label: pr-1
+#| output: false
 prim<-table(features$cid)
 
 #of these how many in prior antiretroviral therapy (1,0)
@@ -147,75 +130,69 @@ prim_str2[2,1]/prim[2] #NO antiretroviral
 prim_str2[2,2]/prim[2] #antiretroviral
 
 ```
-We got ` r prim[2]` people who reached the primary endpoint.
 
+We got `r prim[2]` people who reached the primary endpoint. (`r round(prim[2]/nrow(features)*100, 3)` %)
 
 # 2nd paragraph
-"Sixty-nine
-percent of these patients were in the subgroup with
-prior antiretroviral therapy, and 31 percent in the
-subgroup with no prior antiretroviral therapy."
 
-Just as the paper described we've got similar results considering the percentages of people with/or without prior antiretroviral therapy out of the ones who reached the primary endpoint: `r prim_str2[2,2]/prim[2]*100`% btw `r prim_str2[2,1]/prim[2]*100`%.
+*"Sixty-nine percent of these patients were in the subgroup with prior antiretroviral therapy, and 31 percent in the subgroup with no prior antiretroviral therapy."*
+
+Just as the paper described we've got similar results considering the percentages of people with/or without prior antiretroviral therapy out of the ones who reached the primary endpoint: `r round(prim_str2[2,2]/prim[2]*100,3)`% btw `r round(prim_str2[2,1]/prim[2]*100,3)`%.
 
 # 3rd paragraph
-End points related to the CD4 cell count constituted the
-majority of the first events (399 of 565, or 71 percent).
+
+*End points related to the CD4 cell count constituted the majority of the first events (399 of 565, or 71 percent).*
 
 ```{r}
+#| output: false
 table(features$cid, features$cd420/features$cd40<=0.5 | features$cd420<200)
 
 135/prim[2]
 # 0.2591171 
 ```
 
-=> In our analysis we could only find `r 135/prim[2]*100`% of the primary endpoints related to CD4+ cells in both vases of decrease more than 50% and the AIDS phase with CD4+<200 cells per mm3.
-
+In our analysis we could only find `r round(135/prim[2]*100,3)`% of the primary endpoints related to CD4+ cells in both vases of decrease more than 50% and the AIDS phase with CD4+\<200 cells per mm3.
 
 # 4th paragraph
-In 75 percent of cases the primary end point
-was reached during treatment or within three months
-of its discontinuation; in 15 percent of cases the end
-point was reached more than one year after treatment
-was discontinued. Of the clinical (secondary) end
-points of an AIDS-defining event or death or death
-alone, 50 and 25 percent, respectively, occurred during
-treatment or within three months after its discontinuation;
-25 and 35 percent, respectively, occurred
-more than one year after its discontinuation.
 
-:::{.callout-note}
-Impossible to determine this percentages -> only 1 time variable, we can not see the follow-up or discontinuation of the treatment point
+*In 75 percent of cases the primary end point was reached during treatment or within three months of its discontinuation; in 15 percent of cases the end point was reached more than one year after treatment was discontinued. Of the clinical (secondary) end points of an AIDS-defining event or death or death alone, 50 and 25 percent, respectively, occurred during treatment or within three months after its discontinuation; 25 and 35 percent, respectively, occurred more than one year after its discontinuation.*
+
+::: callout-note
+Impossible to determine this percentages -\> only 1 time variable, we can not see the follow-up or discontinuation of the treatment point
 :::
-
 
 # Figures reproduced: Figure 1 A, B
 
 ```{r}
+#| label: fig-1ab-reproduced
+#| fig-cap: "Kaplan-Meier Estimates of the Proportion of Patients Not Reaching the Primary Endpoint (A) or the Secondary Endpoint(B)"
+#| fig-width: !expr 30/2.54
+#| fig-height: !expr 15/2.54
 
 library(survival)
 
-surv_obj <- Surv(time = features$time/7, event = features$cid)
-km_fit <- survfit(surv_obj ~ trt, data = features)
+surv_obj1 <- Surv(time = features$time/7, event = features$cid)
+km_fit1 <- survfit(surv_obj1 ~ trt, data = features)
 
-
-plot(km_fit, col = c("blue", "red", "green", "violet"), lty = 1:2,
-     xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
-legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
-       col = c("blue", "red", "green", "violet"), lty = 1:2)
 
 
 features$sec_endpoint_maybe<-ifelse(features$cid==1 & features$cd420/features$cd40>0.5,1,0)
 
 
-surv_obj <- Surv(time = features$time/7, event = features$sec_endpoint_maybe)
-km_fit <- survfit(surv_obj ~ trt, data = features)
+surv_obj2 <- Surv(time = features$time/7, event = features$sec_endpoint_maybe)
+km_fit2 <- survfit(surv_obj2 ~ trt, data = features)
 
 
-plot(km_fit, col = c("blue", "red", "green", "violet"), lty = 1:2,
+par(mfrow=c(1,2))
+plot(km_fit1, col = c("blue", "red", "green", "violet"), lty = 1:2,
+     xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
+legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
+       col = c("blue", "red", "green", "violet"), lty = 1:2)
+
+
+plot(km_fit2, col = c("blue", "red", "green", "violet"), lty = 1:2,
      xlab = "Time", ylab = "Survival probability", ylim = c(0,1))
 legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
        col = c("blue", "red", "green", "violet"), lty = 1:2)
 
 ```
-

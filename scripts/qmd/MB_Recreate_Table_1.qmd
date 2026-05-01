@@ -17,6 +17,10 @@ editor_options:
 execute:
   warning: false #this prevent warning messages being rendered
   message: false
+  
+project:
+  execute-dir: project
+  output-dir: output
 ---
 
 ## Get dataset
