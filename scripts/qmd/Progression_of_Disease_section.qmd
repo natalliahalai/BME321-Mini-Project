@@ -43,6 +43,9 @@ features <- aids_clinical_trials_group_study_175$data$features
 targets  <- aids_clinical_trials_group_study_175$data$targets
 
 features$cid<-targets$cid
+features$trt<-factor(features$trt,
+                     levels=c(0,1,2,3),
+                     labels=c("Zidovudine", "Zidovudine and Didanosine", "Zidovudine and Zalcitabine", "Didanosine"))
 
 ```
 
@@ -145,7 +148,7 @@ Just as the paper described we've got similar results considering the percentage
 
 ```{r}
 #| output: false
-table(features$cid, features$cd420/features$cd40<=0.5 | features$cd420<200)
+(table(features$cid, features$cd420/features$cd40<=0.5|features$cd420<200))
 
 135/prim[2]
 # 0.2591171 
@@ -169,6 +172,7 @@ Impossible to determine this percentages -\> only 1 time variable, we can not se
 #| fig-width: !expr 30/2.54
 #| fig-height: !expr 15/2.54
 
+#1. Kaplan Meier
 library(survival)
 
 surv_obj1 <- Surv(time = features$time/7, event = features$cid)
@@ -195,4 +199,92 @@ plot(km_fit2, col = c("blue", "red", "green", "violet"), lty = 1:2,
 legend("bottomleft", legend = c("ZDV"," ZDV + ddI"," ZDV + Zal"," Didanosine"),
        col = c("blue", "red", "green", "violet"), lty = 1:2)
 
+
 ```
+
+
+
+
+```{r}
+# 2. log-rank test
+log_rank_1<-survdiff(Surv(time/7, cid) ~trt, features)
+log_rank_2<-survdiff(Surv(time/7, sec_endpoint_maybe) ~trt, features)
+
+```
+Log Rank test looks if there is a difference between the KM curves. Null-Hypothesis says there is no
+difference and thus we want to disprove it.
+Use Chi squared as we have count/categorical data. (For continuos data we use F test.)
+
+
+```{r}
+# 3. Cox proportionality hazard model stratified by strat
+cox_1<-coxph(Surv(time/7, cid)~trt + strata(strat), features)
+cox_2<-coxph(Surv(time/7, sec_endpoint_maybe)~trt + strata(strat), features)
+
+```
+It models how different variables affect the risk of an event over time.
+In model 1 we can see that treatment 1 (ZZI + ddI) has the lowest risk to develop the event CID of hazard ratio of `r round(exp(cox_1$coefficients[1]),3)` thus a `r (1-round(exp(cox_1$coefficients[1]),3))*100`% lower risk.
+For model 2 with the secondary endpoint we see that also treatment 1 has the lowest risk. (`r round(exp(cox_2$coefficients[1]),3)` thus `r (1-round(exp(cox_2$coefficients[1]),3))*100`% lower risk)
+
+
+```{r}
+# 4. Cox "" with interaction term for diff strat
+cox_inter_1<-coxph(Surv(time/7, cid)~trt * strat, features)
+cox_inter_2<-coxph(Surv(time/7, sec_endpoint_maybe)~trt *strat, features)
+```
+The interaction term is not significant as shown in the Cox proportionality hazard model. Thus we can see that the treatment works the same in each stratification group.
+
+
+Treatment 1 showed significant protective effect in Kaplan Meier, log-rank test and simple Cox models, but was not
+statistically significant in the interaction model, likely due to reduced precision from additional parameters.
+Overall, results show a consistent protective effect of treatment 1.
+
+# Reconstructing the Table 2 with analysis results
+```{r}
+#| label: tbl-1
+#| tbl-cap: "Rates of Disease progression"
+
+library(gtsummary)
+
+#compute N and (%)
+library(dplyr)
+n_trt<- features %>%
+  filter(cid==1)%>%
+  count(trt) %>%
+  mutate(
+    pct=n/sum(n)*100,
+    n_pct = sprintf("%d (%.0f)", n, pct)
+  )
+
+#compute regression tables
+
+tbl_1<-tbl_regression(cox_1, exponentiate = T,
+  label = list(trt ~ "Treatment"))%>%
+  add_global_p()%>%
+  modify_header(label ~ "")
+
+
+tbl_2<-tbl_regression(cox_2, exponentiate = T,
+  label = list(trt ~ "Treatment"))%>%
+  add_global_p()%>%
+  modify_header(label ~ "")%>%
+    modify_table_styling(
+    columns = label,
+    align = "left",
+  ) %>%
+  modify_table_body(
+    ~ .x %>%
+      left_join(n_trt, by = c("label" = "trt"))
+  )
+
+tbl_2 <-
+  tbl_2 %>%
+  modify_header(n_pct ~ "N (%)")
+
+
+tbl_merge(
+  tbls = list(tbl_1, tbl_2),
+  tab_spanner = c("Primary Endpoint", "Secondary Endpoint")
+)
+```
+

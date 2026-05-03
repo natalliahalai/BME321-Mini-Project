@@ -8,6 +8,11 @@ point.
 were 2493 obs included -> all consecutive values will vary.
 
 # 3. AIDS defining event
-* Never mentioned how they defined this event. 
+* Never mentioned how they defined this event. We assumed that the cid is the 
+number of participants reaching the primary endpoint to which AIDS is also 
+part of.
+
+
+
 
 
