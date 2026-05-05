@@ -1,5 +1,6 @@
 ---
-title: "Recreating Table 3 and 4: Statistical Analysis on 2 groups: prior antiretroviral therapy vs no prior antiretroviral therapy"
+title: "Subgroup Analysis According to Whether There Was Prior Antiretroviral Therapy"
+abstract: "Recreating Table 3 and 4: Statistical Analysis on 2 groups: prior antiretroviral therapy vs no prior antiretroviral therapy"
 toc: true
 date: today
 author: Natallia
@@ -25,40 +26,79 @@ execute:
 
 ```{r}
 #| label: prepare-session
+# rm(list=ls())
+
 library(ucimlrepo)
 library(tidyverse)
 library(gtsummary)
 library(gt)
+library(dplyr)
+library(survival)
 
-data<-fetch_ucirepo(id=890)
-data1<- data$data
-df<- data1$original
+# Load the package
+library(ucimlrepo)
+
+# Fetch the dataset by its UCI ID (890)
+aids_clinical_trials_group_study_175 <- fetch_ucirepo(id = 890)
+
+# View metadata
+# print(aids_clinical_trials_group_study_175$metadata)
+
+# Access features and targets
+features <- aids_clinical_trials_group_study_175$data$features
+targets  <- aids_clinical_trials_group_study_175$data$targets
+
+
+features$cid<-targets$cid
+features$trt<-factor(features$trt,
+                     levels=c(0,1,2,3),
+                     labels=c("Zidovudine", "Zidovudine and Didanosine", "Zidovudine and Zalcitabine", "Didanosine"))
+
+features$sec_endpoint_maybe<-ifelse(features$cid==1 & features$cd420/features$cd40>0.5,1,0)
+
+```
+
+```{r}
+#| label: tbl-fake
+library(knitr)
+knitr::kable(str(features))
+```
+
+```{r}
+#| label: tbl-faker
+
+knitr::kable(str(features))
+
+
 ```
 
 
-
-
 ```{r}
-#| label: analysis
-#| output: false
+#| label: analysis-for-no-therapy
+
+#compute N counts
+n_no_therapy<- features %>%
+  filter(cid==1 & str2==0)%>%
+  count(trt) %>%
+  mutate(
+    pct=n/sum(n)*100,
+    n_pct = sprintf("%d (%.0f)", n, pct)
+  )
+
+#subset of the data with no prior antiretroviral treatment
+data_no_therapy<-features%>%
+  filter(str2==0)
 
 
+cox_no_therapy_1<-coxph(Surv(time/7, cid)~trt, data_no_therapy)
+cox_no_therapy_2<-coxph(Surv(time/7, sec_endpoint_maybe)~trt, data_no_therapy)
 
-
-
-
-
-```
-
-
-
-```{r}
-#| label: tbl-therapy
-#| tbl-cap: "Rates of Disease progression among patients with prior antiretroviral therapy"
-
-
-
-
+library(survminer)
+pairwise_survdiff(
+  Surv(time/7, cid) ~ trt,
+  data = data_no_therapy,
+  p.adjust.method = "bonferroni"
+)
 
 ```
 
@@ -68,6 +108,109 @@ df<- data1$original
 #| label: tbl-no-therapy
 #| tbl-cap: "Rates of Disease progression among patients with no prior antiretroviral therapy"
 
+#compute regression tables
+
+tbl_1<-tbl_regression(cox_no_therapy_1, exponentiate = T,
+  label = list(trt ~ "Treatment"))%>%
+  add_global_p()%>%
+  modify_header(label ~ "")
+
+
+tbl_2<-tbl_regression(cox_no_therapy_2, exponentiate = T,
+  label = list(trt ~ "Treatment"))%>%
+  add_global_p()%>%
+  modify_header(label ~ "")%>%
+    modify_table_styling(
+    columns = label,
+    align = "left",
+  ) %>%
+  modify_table_body(
+    ~ .x %>%
+      left_join(n_no_therapy, by = c("label" = "trt"))
+  )
+
+tbl_2 <-
+  tbl_2 %>%
+  modify_header(n_pct ~ "N (%)")
+
+
+tbl_merge(
+  tbls = list(tbl_1, tbl_2),
+  tab_spanner = c("Primary Endpoint", "Secondary Endpoint")
+)
+```
+
+
+
+```{r}
+#| label: analysis_for-therapy
+#compute N counts
+n_therapy<- features %>%
+  filter(cid==1 & str2==1)%>%
+  count(trt) %>%
+  mutate(
+    pct=n/sum(n)*100,
+    n_pct = sprintf("%d (%.0f)", n, pct)
+  )
+
+#subset of the data with prior antiretroviral treatment 
+data_therapy<-features%>%
+  filter(str2==1)
+
+cox_therapy_1<-coxph(Surv(time/7, cid)~trt, data_therapy)
+cox_therapy_2<-coxph(Surv(time/7, sec_endpoint_maybe)~trt, data_therapy)
+
+#pairwise comparison long rank test
+
+pairwise_survdiff(
+  Surv(time/7, cid) ~ trt,
+  data = data_therapy,
+  p.adjust.method = "bonferroni"
+)
+
+```
+```{r}
+#| label: tbl-therapy
+#| tbl-cap: "Rates of Disease progression among patients with prior antiretroviral therapy"
+
+tbl_1<-tbl_regression(cox_therapy_1, exponentiate = T,
+                      label=list(trt="Treatment"))%>%
+  add_global_p()%>%
+  modify_header(label~"")
+
+
+tbl_2<-tbl_regression(cox_therapy_2, exponentiate = T,
+                      label=list(trt="Treatment"))%>%
+  add_global_p()%>%
+  modify_header(label~"")%>%
+    modify_table_styling(
+    columns = label,
+    align = "left",
+  ) %>%
+  modify_table_body(
+    ~ .x %>%
+      left_join(n_therapy, by=c("label"="trt"))
+  )
+
+tbl_2<-tbl_2%>%
+  modify_header(n_pct~"N (%)")
+
+tbl_merge(
+  tbls = list(tbl_1, tbl_2),
+  tab_spanner = c("Primary Endpoint", "Secondary Endpoint")
+)
+
+```
+
+
+
+
+Seeing if there is any difference between the subgroups in the *Zidovudine and Zalcitabine vs Zidovudine only* treatment
+```{r}
+
+data_ZDV_ZZl_only_ZZl<-data.frame(prim=c(0.4044,0.6395,0.3586,0.5908), group=c(0, 1, 0, 1) )
+t.test(data_ZDV_ZZl_only_ZZl$prim, data_ZDV_ZZl_only_ZZl$group)
 
 
 ```
+
