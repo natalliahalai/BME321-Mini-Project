@@ -2,7 +2,7 @@
 
 # Working on:
 
-"Statistical Analysis-Table2" -- Natallia
+"Statistical Analysis-Table3 and 4" -- Natallia
 "Responses of CD4 Cell Counts - reconstructing figure 2" -- Svenja
 
 # Completed
@@ -10,3 +10,4 @@
 "All Subjects" -- Natallia
 "Duration of Follow-Up and Study Treatment" -- Svenja
 "Reconstruct Table 1" -- Mara
+"Statistical Analysis-Table2" -- Natallia

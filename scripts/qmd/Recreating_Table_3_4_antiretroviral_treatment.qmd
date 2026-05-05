@@ -1,0 +1,73 @@
+---
+title: "Recreating Table 3 and 4: Statistical Analysis on 2 groups: prior antiretroviral therapy vs no prior antiretroviral therapy"
+toc: true
+date: today
+author: Natallia
+
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    number-sections: true
+editor: visual
+editor-options:
+  chunk-output-type: console
+  
+project:
+  output-dir: output
+  execute-dir: project
+
+execute: 
+  warning: false
+  error: false
+  freeze: true
+---
+
+```{r}
+#| label: prepare-session
+library(ucimlrepo)
+library(tidyverse)
+library(gtsummary)
+library(gt)
+
+data<-fetch_ucirepo(id=890)
+data1<- data$data
+df<- data1$original
+```
+
+
+
+
+```{r}
+#| label: analysis
+#| output: false
+
+
+
+
+
+
+
+```
+
+
+
+```{r}
+#| label: tbl-therapy
+#| tbl-cap: "Rates of Disease progression among patients with prior antiretroviral therapy"
+
+
+
+
+
+```
+
+
+
+```{r}
+#| label: tbl-no-therapy
+#| tbl-cap: "Rates of Disease progression among patients with no prior antiretroviral therapy"
+
+
+
+```

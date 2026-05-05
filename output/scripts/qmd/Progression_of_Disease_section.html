@@ -2414,18 +2414,48 @@ Figure 2: Kaplan-Meier Estimates of the Proportion of Patients Not Reaching the
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Cox proportionality hazard model stratified by strat</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>cox_1<span class="ot">&lt;-</span><span class="fu">coxph</span>(<span class="fu">Surv</span>(time<span class="sc">/</span><span class="dv">7</span>, cid)<span class="sc">~</span>trt <span class="sc">+</span> <span class="fu">strata</span>(strat), features)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>cox_2<span class="ot">&lt;-</span><span class="fu">coxph</span>(<span class="fu">Surv</span>(time<span class="sc">/</span><span class="dv">7</span>, sec_endpoint_maybe)<span class="sc">~</span>trt <span class="sc">+</span> <span class="fu">strata</span>(strat), features)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#pairwise long rank test</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survminer)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">pairwise_survdiff</span>(</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Surv</span>(time<span class="sc">/</span><span class="dv">7</span>, cid) <span class="sc">~</span> trt,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> features,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">p.adjust.method =</span> <span class="st">&quot;bonferroni&quot;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Pairwise comparisons using Log-Rank test 
+
+data:  features and trt 
+
+                           Zidovudine Zidovudine and Didanosine
+Zidovudine and Didanosine  3.6e-08    -                        
+Zidovudine and Zalcitabine 4.8e-07    1                        
+Didanosine                 2.2e-05    1                        
+                           Zidovudine and Zalcitabine
+Zidovudine and Didanosine  -                         
+Zidovudine and Zalcitabine -                         
+Didanosine                 1                         
+
+P value adjustment method: bonferroni </code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Cox proportionality hazard model stratified by strat</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>cox_1<span class="ot">&lt;-</span><span class="fu">coxph</span>(<span class="fu">Surv</span>(time<span class="sc">/</span><span class="dv">7</span>, cid)<span class="sc">~</span>trt <span class="sc">+</span> <span class="fu">strata</span>(strat), features)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>cox_2<span class="ot">&lt;-</span><span class="fu">coxph</span>(<span class="fu">Surv</span>(time<span class="sc">/</span><span class="dv">7</span>, sec_endpoint_maybe)<span class="sc">~</span>trt <span class="sc">+</span> <span class="fu">strata</span>(strat), features)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>It models how different variables affect the risk of an event over time. In model 1 we can see that treatment 1 (ZZI + ddI) has the lowest risk to develop the event CID of hazard ratio of 0.486 thus a 51.4% lower risk. For model 2 with the secondary endpoint we see that also treatment 1 has the lowest risk. (0.52 thus 48% lower risk)</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Cox &quot;&quot; with interaction term for diff strat</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>cox_inter_1<span class="ot">&lt;-</span><span class="fu">coxph</span>(<span class="fu">Surv</span>(time<span class="sc">/</span><span class="dv">7</span>, cid)<span class="sc">~</span>trt <span class="sc">*</span> strat, features)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>cox_inter_2<span class="ot">&lt;-</span><span class="fu">coxph</span>(<span class="fu">Surv</span>(time<span class="sc">/</span><span class="dv">7</span>, sec_endpoint_maybe)<span class="sc">~</span>trt <span class="sc">*</span>strat, features)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Cox &quot;&quot; with interaction term for diff strat</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>cox_inter_1<span class="ot">&lt;-</span><span class="fu">coxph</span>(<span class="fu">Surv</span>(time<span class="sc">/</span><span class="dv">7</span>, cid)<span class="sc">~</span>trt <span class="sc">*</span> strat, features)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>cox_inter_2<span class="ot">&lt;-</span><span class="fu">coxph</span>(<span class="fu">Surv</span>(time<span class="sc">/</span><span class="dv">7</span>, sec_endpoint_maybe)<span class="sc">~</span>trt <span class="sc">*</span>strat, features)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>The interaction term is not significant as shown in the Cox proportionality hazard model. Thus we can see that the treatment works the same in each stratification group.</p>
@@ -2436,48 +2466,48 @@ Figure 2: Kaplan-Meier Estimates of the Proportion of Patients Not Reaching the
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gtsummary)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#compute N and (%)</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>n_trt<span class="ot">&lt;-</span> features <span class="sc">%&gt;%</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cid<span class="sc">==</span><span class="dv">1</span>)<span class="sc">%&gt;%</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(trt) <span class="sc">%&gt;%</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">pct=</span>n<span class="sc">/</span><span class="fu">sum</span>(n)<span class="sc">*</span><span class="dv">100</span>,</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_pct =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%d (%.0f)&quot;</span>, n, pct)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co">#compute regression tables</span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>tbl_1<span class="ot">&lt;-</span><span class="fu">tbl_regression</span>(cox_1, <span class="at">exponentiate =</span> T,</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">list</span>(trt <span class="sc">~</span> <span class="st">&quot;Treatment&quot;</span>))<span class="sc">%&gt;%</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_global_p</span>()<span class="sc">%&gt;%</span></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(label <span class="sc">~</span> <span class="st">&quot;&quot;</span>)</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>tbl_2<span class="ot">&lt;-</span><span class="fu">tbl_regression</span>(cox_2, <span class="at">exponentiate =</span> T,</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">list</span>(trt <span class="sc">~</span> <span class="st">&quot;Treatment&quot;</span>))<span class="sc">%&gt;%</span></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_global_p</span>()<span class="sc">%&gt;%</span></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(label <span class="sc">~</span> <span class="st">&quot;&quot;</span>)<span class="sc">%&gt;%</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">modify_table_styling</span>(</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> label,</span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="st">&quot;left&quot;</span>,</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_table_body</span>(</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="sc">~</span> .x <span class="sc">%&gt;%</span></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>      <span class="fu">left_join</span>(n_trt, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;label&quot;</span> <span class="ot">=</span> <span class="st">&quot;trt&quot;</span>))</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>tbl_2 <span class="ot">&lt;-</span></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  tbl_2 <span class="sc">%&gt;%</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(n_pct <span class="sc">~</span> <span class="st">&quot;N (%)&quot;</span>)</span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl_merge</span>(</span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">tbls =</span> <span class="fu">list</span>(tbl_1, tbl_2),</span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">tab_spanner =</span> <span class="fu">c</span>(<span class="st">&quot;Primary Endpoint&quot;</span>, <span class="st">&quot;Secondary Endpoint&quot;</span>)</span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gtsummary)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#compute N and (%)</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>n_trt<span class="ot">&lt;-</span> features <span class="sc">%&gt;%</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cid<span class="sc">==</span><span class="dv">1</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(trt) <span class="sc">%&gt;%</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">pct=</span>n<span class="sc">/</span><span class="fu">sum</span>(n)<span class="sc">*</span><span class="dv">100</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_pct =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%d (%.0f)&quot;</span>, n, pct)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co">#compute regression tables</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>tbl_1<span class="ot">&lt;-</span><span class="fu">tbl_regression</span>(cox_1, <span class="at">exponentiate =</span> T,</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">list</span>(trt <span class="sc">~</span> <span class="st">&quot;Treatment&quot;</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_global_p</span>()<span class="sc">%&gt;%</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(label <span class="sc">~</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>tbl_2<span class="ot">&lt;-</span><span class="fu">tbl_regression</span>(cox_2, <span class="at">exponentiate =</span> T,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">list</span>(trt <span class="sc">~</span> <span class="st">&quot;Treatment&quot;</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_global_p</span>()<span class="sc">%&gt;%</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(label <span class="sc">~</span> <span class="st">&quot;&quot;</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">modify_table_styling</span>(</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> label,</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="st">&quot;left&quot;</span>,</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_table_body</span>(</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    <span class="sc">~</span> .x <span class="sc">%&gt;%</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>      <span class="fu">left_join</span>(n_trt, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;label&quot;</span> <span class="ot">=</span> <span class="st">&quot;trt&quot;</span>))</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>tbl_2 <span class="ot">&lt;-</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>  tbl_2 <span class="sc">%&gt;%</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(n_pct <span class="sc">~</span> <span class="st">&quot;N (%)&quot;</span>)</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl_merge</span>(</span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">tbls =</span> <span class="fu">list</span>(tbl_1, tbl_2),</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">tab_spanner =</span> <span class="fu">c</span>(<span class="st">&quot;Primary Endpoint&quot;</span>, <span class="st">&quot;Secondary Endpoint&quot;</span>)</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div id="tbl-1" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
@@ -2486,20 +2516,20 @@ Table 1: Rates of Disease progression
 </figcaption>
 <div aria-describedby="tbl-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="loiktfppfo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#loiktfppfo table {
+<div id="keosxnpbtu" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#keosxnpbtu table {
 font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 -webkit-font-smoothing: antialiased;
 -moz-osx-font-smoothing: grayscale;
 }
-#loiktfppfo thead, #loiktfppfo tbody, #loiktfppfo tfoot, #loiktfppfo tr, #loiktfppfo td, #loiktfppfo th {
+#keosxnpbtu thead, #keosxnpbtu tbody, #keosxnpbtu tfoot, #keosxnpbtu tr, #keosxnpbtu td, #keosxnpbtu th {
 border-style: none;
 }
-#loiktfppfo p {
+#keosxnpbtu p {
 margin: 0;
 padding: 0;
 }
-#loiktfppfo .gt_table {
+#keosxnpbtu .gt_table {
 display: table;
 border-collapse: collapse;
 line-height: normal;
@@ -2524,11 +2554,11 @@ border-left-style: none;
 border-left-width: 2px;
 border-left-color: #D3D3D3;
 }
-#loiktfppfo .gt_caption {
+#keosxnpbtu .gt_caption {
 padding-top: 4px;
 padding-bottom: 4px;
 }
-#loiktfppfo .gt_title {
+#keosxnpbtu .gt_title {
 color: #333333;
 font-size: 125%;
 font-weight: initial;
@@ -2539,7 +2569,7 @@ padding-right: 5px;
 border-bottom-color: #FFFFFF;
 border-bottom-width: 0;
 }
-#loiktfppfo .gt_subtitle {
+#keosxnpbtu .gt_subtitle {
 color: #333333;
 font-size: 85%;
 font-weight: initial;
@@ -2550,7 +2580,7 @@ padding-right: 5px;
 border-top-color: #FFFFFF;
 border-top-width: 0;
 }
-#loiktfppfo .gt_heading {
+#keosxnpbtu .gt_heading {
 background-color: #FFFFFF;
 text-align: center;
 border-bottom-color: #FFFFFF;
@@ -2561,12 +2591,12 @@ border-right-style: none;
 border-right-width: 1px;
 border-right-color: #D3D3D3;
 }
-#loiktfppfo .gt_bottom_border {
+#keosxnpbtu .gt_bottom_border {
 border-bottom-style: solid;
 border-bottom-width: 2px;
 border-bottom-color: #D3D3D3;
 }
-#loiktfppfo .gt_col_headings {
+#keosxnpbtu .gt_col_headings {
 border-top-style: solid;
 border-top-width: 2px;
 border-top-color: #D3D3D3;
@@ -2580,7 +2610,7 @@ border-right-style: none;
 border-right-width: 1px;
 border-right-color: #D3D3D3;
 }
-#loiktfppfo .gt_col_heading {
+#keosxnpbtu .gt_col_heading {
 color: #333333;
 background-color: #FFFFFF;
 font-size: 100%;
@@ -2599,7 +2629,7 @@ padding-left: 5px;
 padding-right: 5px;
 overflow-x: hidden;
 }
-#loiktfppfo .gt_column_spanner_outer {
+#keosxnpbtu .gt_column_spanner_outer {
 color: #333333;
 background-color: #FFFFFF;
 font-size: 100%;
@@ -2610,13 +2640,13 @@ padding-bottom: 0;
 padding-left: 4px;
 padding-right: 4px;
 }
-#loiktfppfo .gt_column_spanner_outer:first-child {
+#keosxnpbtu .gt_column_spanner_outer:first-child {
 padding-left: 0;
 }
-#loiktfppfo .gt_column_spanner_outer:last-child {
+#keosxnpbtu .gt_column_spanner_outer:last-child {
 padding-right: 0;
 }
-#loiktfppfo .gt_column_spanner {
+#keosxnpbtu .gt_column_spanner {
 border-bottom-style: solid;
 border-bottom-width: 2px;
 border-bottom-color: #D3D3D3;
@@ -2627,10 +2657,10 @@ overflow-x: hidden;
 display: inline-block;
 width: 100%;
 }
-#loiktfppfo .gt_spanner_row {
+#keosxnpbtu .gt_spanner_row {
 border-bottom-style: hidden;
 }
-#loiktfppfo .gt_group_heading {
+#keosxnpbtu .gt_group_heading {
 padding-top: 8px;
 padding-bottom: 8px;
 padding-left: 5px;
@@ -2655,7 +2685,7 @@ border-right-color: #D3D3D3;
 vertical-align: middle;
 text-align: left;
 }
-#loiktfppfo .gt_empty_group_heading {
+#keosxnpbtu .gt_empty_group_heading {
 padding: 0.5px;
 color: #333333;
 background-color: #FFFFFF;
@@ -2669,13 +2699,13 @@ border-bottom-width: 2px;
 border-bottom-color: #D3D3D3;
 vertical-align: middle;
 }
-#loiktfppfo .gt_from_md > :first-child {
+#keosxnpbtu .gt_from_md > :first-child {
 margin-top: 0;
 }
-#loiktfppfo .gt_from_md > :last-child {
+#keosxnpbtu .gt_from_md > :last-child {
 margin-bottom: 0;
 }
-#loiktfppfo .gt_row {
+#keosxnpbtu .gt_row {
 padding-top: 8px;
 padding-bottom: 8px;
 padding-left: 5px;
@@ -2693,7 +2723,7 @@ border-right-color: #D3D3D3;
 vertical-align: middle;
 overflow-x: hidden;
 }
-#loiktfppfo .gt_stub {
+#keosxnpbtu .gt_stub {
 color: #333333;
 background-color: #FFFFFF;
 font-size: 100%;
@@ -2705,7 +2735,7 @@ border-right-color: #D3D3D3;
 padding-left: 5px;
 padding-right: 5px;
 }
-#loiktfppfo .gt_stub_row_group {
+#keosxnpbtu .gt_stub_row_group {
 color: #333333;
 background-color: #FFFFFF;
 font-size: 100%;
@@ -2718,13 +2748,13 @@ padding-left: 5px;
 padding-right: 5px;
 vertical-align: top;
 }
-#loiktfppfo .gt_row_group_first td {
+#keosxnpbtu .gt_row_group_first td {
 border-top-width: 2px;
 }
-#loiktfppfo .gt_row_group_first th {
+#keosxnpbtu .gt_row_group_first th {
 border-top-width: 2px;
 }
-#loiktfppfo .gt_summary_row {
+#keosxnpbtu .gt_summary_row {
 color: #333333;
 background-color: #FFFFFF;
 text-transform: inherit;
@@ -2733,14 +2763,14 @@ padding-bottom: 8px;
 padding-left: 5px;
 padding-right: 5px;
 }
-#loiktfppfo .gt_first_summary_row {
+#keosxnpbtu .gt_first_summary_row {
 border-top-style: solid;
 border-top-color: #D3D3D3;
 }
-#loiktfppfo .gt_first_summary_row.thick {
+#keosxnpbtu .gt_first_summary_row.thick {
 border-top-width: 2px;
 }
-#loiktfppfo .gt_last_summary_row {
+#keosxnpbtu .gt_last_summary_row {
 padding-top: 8px;
 padding-bottom: 8px;
 padding-left: 5px;
@@ -2749,7 +2779,7 @@ border-bottom-style: solid;
 border-bottom-width: 2px;
 border-bottom-color: #D3D3D3;
 }
-#loiktfppfo .gt_grand_summary_row {
+#keosxnpbtu .gt_grand_summary_row {
 color: #333333;
 background-color: #FFFFFF;
 text-transform: inherit;
@@ -2758,7 +2788,7 @@ padding-bottom: 8px;
 padding-left: 5px;
 padding-right: 5px;
 }
-#loiktfppfo .gt_first_grand_summary_row {
+#keosxnpbtu .gt_first_grand_summary_row {
 padding-top: 8px;
 padding-bottom: 8px;
 padding-left: 5px;
@@ -2767,7 +2797,7 @@ border-top-style: double;
 border-top-width: 6px;
 border-top-color: #D3D3D3;
 }
-#loiktfppfo .gt_last_grand_summary_row_top {
+#keosxnpbtu .gt_last_grand_summary_row_top {
 padding-top: 8px;
 padding-bottom: 8px;
 padding-left: 5px;
@@ -2776,10 +2806,10 @@ border-bottom-style: double;
 border-bottom-width: 6px;
 border-bottom-color: #D3D3D3;
 }
-#loiktfppfo .gt_striped {
+#keosxnpbtu .gt_striped {
 background-color: rgba(128, 128, 128, 0.05);
 }
-#loiktfppfo .gt_table_body {
+#keosxnpbtu .gt_table_body {
 border-top-style: solid;
 border-top-width: 2px;
 border-top-color: #D3D3D3;
@@ -2787,7 +2817,7 @@ border-bottom-style: solid;
 border-bottom-width: 2px;
 border-bottom-color: #D3D3D3;
 }
-#loiktfppfo .gt_footnotes {
+#keosxnpbtu .gt_footnotes {
 color: #333333;
 background-color: #FFFFFF;
 border-bottom-style: none;
@@ -2800,7 +2830,7 @@ border-right-style: none;
 border-right-width: 2px;
 border-right-color: #D3D3D3;
 }
-#loiktfppfo .gt_footnote {
+#keosxnpbtu .gt_footnote {
 margin: 0px;
 font-size: 90%;
 padding-top: 4px;
@@ -2808,7 +2838,7 @@ padding-bottom: 4px;
 padding-left: 5px;
 padding-right: 5px;
 }
-#loiktfppfo .gt_sourcenotes {
+#keosxnpbtu .gt_sourcenotes {
 color: #333333;
 background-color: #FFFFFF;
 border-bottom-style: none;
@@ -2821,64 +2851,64 @@ border-right-style: none;
 border-right-width: 2px;
 border-right-color: #D3D3D3;
 }
-#loiktfppfo .gt_sourcenote {
+#keosxnpbtu .gt_sourcenote {
 font-size: 90%;
 padding-top: 4px;
 padding-bottom: 4px;
 padding-left: 5px;
 padding-right: 5px;
 }
-#loiktfppfo .gt_left {
+#keosxnpbtu .gt_left {
 text-align: left;
 }
-#loiktfppfo .gt_center {
+#keosxnpbtu .gt_center {
 text-align: center;
 }
-#loiktfppfo .gt_right {
+#keosxnpbtu .gt_right {
 text-align: right;
 font-variant-numeric: tabular-nums;
 }
-#loiktfppfo .gt_font_normal {
+#keosxnpbtu .gt_font_normal {
 font-weight: normal;
 }
-#loiktfppfo .gt_font_bold {
+#keosxnpbtu .gt_font_bold {
 font-weight: bold;
 }
-#loiktfppfo .gt_font_italic {
+#keosxnpbtu .gt_font_italic {
 font-style: italic;
 }
-#loiktfppfo .gt_super {
+#keosxnpbtu .gt_super {
 font-size: 65%;
 }
-#loiktfppfo .gt_footnote_marks {
+#keosxnpbtu .gt_footnote_marks {
 font-size: 75%;
 vertical-align: 0.4em;
 position: initial;
 }
-#loiktfppfo .gt_asterisk {
+#keosxnpbtu .gt_asterisk {
 font-size: 100%;
 vertical-align: 0;
 }
-#loiktfppfo .gt_indent_1 {
+#keosxnpbtu .gt_indent_1 {
 text-indent: 5px;
 }
-#loiktfppfo .gt_indent_2 {
+#keosxnpbtu .gt_indent_2 {
 text-indent: 10px;
 }
-#loiktfppfo .gt_indent_3 {
+#keosxnpbtu .gt_indent_3 {
 text-indent: 15px;
 }
-#loiktfppfo .gt_indent_4 {
+#keosxnpbtu .gt_indent_4 {
 text-indent: 20px;
 }
-#loiktfppfo .gt_indent_5 {
+#keosxnpbtu .gt_indent_5 {
 text-indent: 25px;
 }
-#loiktfppfo .katex-display {
+#keosxnpbtu .katex-display {
 display: inline-flex !important;
 margin-bottom: 0.75em !important;
 }
-#loiktfppfo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#keosxnpbtu div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
 height: 0px !important;
 }
 </style>

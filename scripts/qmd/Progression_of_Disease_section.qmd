@@ -217,6 +217,19 @@ Use Chi squared as we have count/categorical data. (For continuos data we use F 
 
 
 ```{r}
+#pairwise long rank test
+library(survival)
+library(survminer)
+pairwise_survdiff(
+  Surv(time/7, cid) ~ trt,
+  data = features,
+  p.adjust.method = "bonferroni"
+)
+```
+
+
+
+```{r}
 # 3. Cox proportionality hazard model stratified by strat
 cox_1<-coxph(Surv(time/7, cid)~trt + strata(strat), features)
 cox_2<-coxph(Surv(time/7, sec_endpoint_maybe)~trt + strata(strat), features)
